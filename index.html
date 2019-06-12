@@ -5,16 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #root {
+            height: 100vh;
+            background-color: cadetblue;
+        }
+
+        #root.highlited {
+            background-color: darkblue;
+        }
+    </style>
 </head>
 
 <body>
-    <div id="dropelem" style="height: 100vh"></div>
-    <script lang="javascript" src="./node_modules/xlsx/dist/xlsx.full.min.js"></script>
+    <div id="root"></div>
+    <script src="./node_modules/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="./src/js/thirdparty/highcharts.js"></script>
+    <script src="./src/js/thirdparty/wordcloud.js"></script>
+    <script src="./src/js/thirdparty/exporting.js"></script>
+    <script src="./src/js/thirdparty/offline-exporting.js"></script>
+    <script src="./src/js/thirdparty/export-data.js"></script>
     <script>
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            document.querySelector("#dropelem").addEventListener(eventName, preventDefaults, false)
-        })
+        var dropArea = document.querySelector("#root");
 
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false)
+        });
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false)
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false)
+        });
+
+        function highlight(e) {
+            dropArea.classList.add('highlight')
+        }
+
+        function unhighlight(e) {
+            dropArea.classList.remove('highlight')
+        }
         function preventDefaults(e) {
             e.preventDefault()
             e.stopPropagation()
@@ -24,15 +60,43 @@
             var files = e.dataTransfer.files, f = files[0];
             var reader = new FileReader();
             reader.onload = function (e) {
-                var data = new Uint8Array(e.target.result);
-                var workbook = XLSX.read(data, { type: 'array' });
-                debugger;
-                /* DO SOMETHING WITH workbook HERE */
+                try {
+                    var data = new Uint8Array(e.target.result);
+                    var workbook = XLSX.read(data, { type: 'array' });
+                    var first_sheet_name = workbook.SheetNames[0];
+                    var data_array = XLS.utils.sheet_to_json(workbook.Sheets[first_sheet_name]);
+                    var chart_series = data_array.map(({ Word, Weight, Positive }) => ({ name: Word, weight: Weight, color: (Positive ? "#32be82" : "#e6463c") }))
+
+                    Highcharts.chart('root', {
+                        series: [{
+                            type: 'wordcloud',
+                            data: chart_series,
+                            rotation: {
+                                from: 0,
+                                to: 0,
+                            },
+                            minFontSize: 7,
+                            style: {
+                                fontFamily: 'Arial',
+                            },
+                        }],
+                        credits: {
+                            enabled: false
+                        },
+                        title: {
+                            text: ''
+                        }
+                    });
+                    debugger;
+                }
+                catch (e) {
+                    debugger;
+                    alert("An error occurred!");
+                }
             };
             reader.readAsArrayBuffer(f);
         }
-
-        document.querySelector("#dropelem").addEventListener('drop', handleDrop, false);
+        dropArea.addEventListener('drop', handleDrop, false);
     </script>
 </body>
 
