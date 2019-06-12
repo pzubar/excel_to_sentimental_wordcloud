@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="dropelem" style="height: 100vh"></div>
+    <script lang="javascript" src="./node_modules/xlsx/dist/xlsx.full.min.js"></script>
+    <script>
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            document.querySelector("#dropelem").addEventListener(eventName, preventDefaults, false)
+        })
+
+        function preventDefaults(e) {
+            e.preventDefault()
+            e.stopPropagation()
+        }
+
+        function handleDrop(e) {
+            var files = e.dataTransfer.files, f = files[0];
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var data = new Uint8Array(e.target.result);
+                var workbook = XLSX.read(data, { type: 'array' });
+                debugger;
+                /* DO SOMETHING WITH workbook HERE */
+            };
+            reader.readAsArrayBuffer(f);
+        }
+
+        document.querySelector("#dropelem").addEventListener('drop', handleDrop, false);
+    </script>
+</body>
+
+</html>
