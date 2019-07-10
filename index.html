@@ -26,78 +26,9 @@
 <body>
     <div id="root"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.14.3/xlsx.full.min.js"></script>
-    <script src="./src/js/thirdparty/highcharts.js"></script>
-    <script src="./src/js/thirdparty/wordcloud.js"></script>
-    <script src="./src/js/thirdparty/exporting.js"></script>
-    <script src="./src/js/thirdparty/offline-exporting.js"></script>
-    <script src="./src/js/thirdparty/export-data.js"></script>
-    <script>
-        var dropArea = document.querySelector("#root");
-
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, preventDefaults, false)
-        });
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropArea.addEventListener(eventName, highlight, false)
-        });
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, unhighlight, false)
-        });
-
-        function highlight(e) {
-            dropArea.classList.add('highlight')
-        }
-
-        function unhighlight(e) {
-            dropArea.classList.remove('highlight')
-        }
-        function preventDefaults(e) {
-            e.preventDefault()
-            e.stopPropagation()
-        }
-
-        function handleDrop(e) {
-            var files = e.dataTransfer.files, f = files[0];
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                try {
-                    var data = new Uint8Array(e.target.result);
-                    var workbook = XLSX.read(data, { type: 'array' });
-                    var first_sheet_name = workbook.SheetNames[0];
-                    var data_array = XLS.utils.sheet_to_json(workbook.Sheets[first_sheet_name]);
-                    var chart_series = data_array.map(({ Word, Weight, Positive }) => ({ name: Word, weight: Weight, color: (Positive ? "#32be82" : "#e6463c") }))
-
-                    Highcharts.chart('root', {
-                        series: [{
-                            type: 'wordcloud',
-                            data: chart_series,
-                            rotation: {
-                                from: 0,
-                                to: 0,
-                            },
-                            minFontSize: 12,
-                            maxFontSize: 72,
-                            style: {
-                                fontFamily: 'Arial',
-                            },
-                        }],
-                        credits: {
-                            enabled: false
-                        },
-                        title: {
-                            text: ''
-                        }
-                    });
-                }
-                catch (e) {
-                    debugger;
-                    alert("An error occurred!");
-                }
-            };
-            reader.readAsArrayBuffer(f);
-        }
-        dropArea.addEventListener('drop', handleDrop, false);
-    </script>
+    <script src="./modules/zingchart.js"></script>
+    <script src="./modules/zingchart-wordcloud.min.js"></script>
+    <script src="./src/js/index.js"></script>
 </body>
 
 </html>
